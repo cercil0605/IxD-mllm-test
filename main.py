@@ -32,16 +32,8 @@ def main():
     if not cleaned_image:
         print("Failed to generate image. Exiting.")
         return
-
-    # 4. Save the generated image
-    print(f"Step 4: Saving generated image to {generated_image_path}...")
-    cleaned_image.save(generated_image_path)
-    print(f"Generated image saved successfully.")
-
-    try:
-        cleaned_image.show()
-    except Exception as e:
-        print(f"Note: Failed to display image automatically: {e}")
+    
+    print("Finished: Done Generated cleaned Image and Score,Json")
 
 if __name__ == "__main__":
     main()

@@ -1,8 +1,9 @@
 import os
+from io import BytesIO
 from PIL import Image
 from dotenv import load_dotenv
-import google.generativeai as genai
-from google.generativeai.types import GenerationConfig
+from google import genai
+from google.genai import types
 from google.api_core.exceptions import GoogleAPIError
 
 def convert_json_to_prompt(data):
@@ -23,26 +24,21 @@ def generate_cleaned_image(base_image_path, instructions_json):
     if not api_key:
         raise ValueError("API_KEYが設定されていません。.envファイルを確認してください。")
 
-    genai.configure(api_key=api_key)
+    client = genai.Client(api_key=api_key)
 
     prompt_text = convert_json_to_prompt(instructions_json)
     print(f"Generated Prompt: {prompt_text}")
 
-    model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash-preview-image-generation",  # 画像生成に対応
-        generation_config=GenerationConfig(
-            temperature=0.7
-        )
-    )
-
     try:
         base_image = Image.open(base_image_path)
 
-        response = model.generate_content([
-            {"text": prompt_text},
-            base_image
-        ])
-
+        response = client.models.generate_content(
+            model="gemini-2.0-flash-preview-image-generation",
+            contents=[prompt_text,base_image],
+            config=types.GenerateContentConfig(
+                response_modalities=['TEXT', 'IMAGE']
+            )
+        )
         if not response.candidates:
             raise ValueError("No candidates in response.")
 
@@ -53,14 +49,16 @@ def generate_cleaned_image(base_image_path, instructions_json):
         for part in parts:
             if hasattr(part, "text") and part.text:
                 print("Text output:", part.text)
-            if hasattr(part, "image") and part.image:
-                part.image.save(generated_image_path)
-                image_saved = True
-                print(f"Saved to {generated_image_path}")
-
+            if hasattr(part, "inline_data") and part.inline_data:
+                mime_type = part.inline_data.mime_type
+                if mime_type.startswith("image/"):
+                    image = Image.open(BytesIO(part.inline_data.data))
+                    image.save(generated_image_path)
+                    print(f"Image saved to {generated_image_path}")
+                    image_saved = True
+                    return True
         if not image_saved:
             raise ValueError("No image found in response.")
-
     except GoogleAPIError as e:
         print(f"API error: {e}")
         return None
