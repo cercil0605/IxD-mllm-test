@@ -2,7 +2,10 @@ module mllm-test-gemini
 
 go 1.24.4
 
-require google.golang.org/genai v1.14.0
+require (
+	github.com/joho/godotenv v1.5.1
+	google.golang.org/genai v1.14.0
+)
 
 require (
 	cloud.google.com/go v0.116.0 // indirect
@@ -13,7 +16,6 @@ require (
 	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/net v0.29.0 // indirect
